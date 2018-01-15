@@ -9,9 +9,13 @@ package org.usfirst.frc.team4152.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+//import edu.wpi.first.wpilibj.SpeedControllerGroup;
+//import com.ctre.phoenix.motorcontrol.ControlMode;
+//import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -23,10 +27,18 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 public class Robot extends IterativeRobot {
 	private Joystick m_stick = new Joystick(0);
 	private Timer m_timer = new Timer();
-	protected VictorSP leftMotors = new VictorSP(0);
-	protected VictorSP rightMotors = new VictorSP(1);
+	//protected VictorSP leftMotors = new VictorSP(0);
+	//protected VictorSP rightMotors = new VictorSP(1);
+	//private DifferentialDrive robotDrive
+	//= new DifferentialDrive(leftMotors, rightMotors);
+	//creates talonSRX object
+	//private TalonSRX t = new TalonSRX(2);
+	private Spark lm = new Spark(0);
+	private Spark rm = new Spark(1);
+	//SpeedControllerGroup m_right = new SpeedControllerGroup(rm, rm);
+	//SpeedControllerGroup m_left = new SpeedControllerGroup(lm, lm);
 	private DifferentialDrive robotDrive
-	= new DifferentialDrive(leftMotors, rightMotors);
+	= new DifferentialDrive(lm, rm);
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -34,6 +46,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
+		//sets the motor speed to 100%
+		//t.set(ControlMode.PercentOutput, 0);
 	}
 
 	/**
