@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
  */
 public class Robot extends IterativeRobot {
 	private Joystick m_stick = new Joystick(0);
+	private double hoistick = m_stick.getRawAxis(4);
+	private double hoystick = m_stick.getRawAxis(5);
 	private Timer m_timer = new Timer();
 	//protected VictorSP leftMotors = new VictorSP(0);
 	//protected VictorSP rightMotors = new VictorSP(1);
@@ -84,7 +86,15 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
+		if( (m_stick.getY() >=-0.2 && m_stick.getY() <= 0.2) && (m_stick.getX() >=-0.2 && m_stick.getX() <= 0.2))
+		{
+			robotDrive.arcadeDrive(hoystick*0.5, hoistick*0.5);
+		}	
+		else
+		{
+			robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
+		}
+			
 	}
 
 	/**
