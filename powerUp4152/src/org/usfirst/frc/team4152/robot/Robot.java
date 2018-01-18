@@ -4,7 +4,6 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-
 package org.usfirst.frc.team4152.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -13,6 +12,8 @@ import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Encoder;
 //import edu.wpi.first.wpilibj.SpeedControllerGroup;
 //import com.ctre.phoenix.motorcontrol.ControlMode;
 //import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -28,6 +29,10 @@ public class Robot extends IterativeRobot {
 	private Joystick m_stick = new Joystick(0);
 	private double hoistick = m_stick.getRawAxis(4);
 	private double hoystick = m_stick.getRawAxis(5);
+	private Encoder leftEncoder = new Encoder(1,2);
+	private Encoder rightEncoder = new Encoder(3,4);
+	private Encoder leftClimbEncoder = new Encoder(5,6);
+	private Encoder rightClimbEncoder = new Encoder(7,8);
 	private Timer m_timer = new Timer();
 	//protected VictorSP leftMotors = new VictorSP(0);
 	//protected VictorSP rightMotors = new VictorSP(1);
@@ -50,6 +55,19 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		//sets the motor speed to 100%
 		//t.set(ControlMode.PercentOutput, 0);
+		leftEncoder.setSamplesToAverage(5);
+		rightEncoder.setSamplesToAverage(5);
+		leftEncoder.setDistancePerPulse(1.0/360);
+		rightEncoder.setDistancePerPulse(1.0/360);
+		leftEncoder.reset();
+		rightEncoder.reset();
+		leftClimbEncoder.setSamplesToAverage(5);
+		rightClimbEncoder.setSamplesToAverage(5);
+		leftClimbEncoder.setDistancePerPulse(1.0/360);
+		rightClimbEncoder.setDistancePerPulse(1.0/360);
+		leftClimbEncoder.reset();
+		rightClimbEncoder.reset();
+		
 	}
 
 	/**
@@ -58,7 +76,12 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit() {
 		m_timer.reset();
+		leftEncoder.reset();
+		rightEncoder.reset();
+		leftClimbEncoder.reset();
+		rightClimbEncoder.reset();
 		m_timer.start();
+		
 	}
 
 	/**
@@ -66,12 +89,21 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		//we shall overthrow the fuhrer with blood and iron, for today is the day of days that all days after this day shall remember this day as a day before their day that was the day of days... also Nolan is bad and so am I...
 		// Drive for 2 seconds
 		/*if (m_timer.get() < 2.0) {
 			m_robotDrive.arcadeDrive(0.5, 0.0); // drive forwards half speed
 		} else {
 			m_robotDrive.stopMotor(); // stop robot
 		}*/
+		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
+		SmartDashboard.putNumber("RightEncoder Distance", rightEncoder.getDistance());
+		SmartDashboard.putNumber("LeftEncoder Rate", leftEncoder.getRate());
+		SmartDashboard.putNumber("RightEncoder Rate", rightEncoder.getRate());
+		SmartDashboard.putNumber("LeftClimbEncoder Distance", leftClimbEncoder.getDistance());
+		SmartDashboard.putNumber("RightClimbEncoder Distance", rightClimbEncoder.getDistance());
+		SmartDashboard.putNumber("LeftClimbEncoder Rate", leftClimbEncoder.getRate());
+		SmartDashboard.putNumber("RightClimbEncoder Rate", rightClimbEncoder.getRate());
 	}
 
 	/**
@@ -79,6 +111,10 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopInit() {
+		leftEncoder.reset();
+		rightEncoder.reset();
+		leftClimbEncoder.reset();
+		rightClimbEncoder.reset();
 	}
 
 	/**
@@ -94,7 +130,14 @@ public class Robot extends IterativeRobot {
 		{
 			robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
 		}
-			
+		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
+		SmartDashboard.putNumber("RightEncoder Distance", rightEncoder.getDistance());
+		SmartDashboard.putNumber("LeftEncoder Rate", leftEncoder.getRate());
+		SmartDashboard.putNumber("RightEncoder Rate", rightEncoder.getRate());
+		SmartDashboard.putNumber("LeftClimbEncoder Distance", leftClimbEncoder.getDistance());
+		SmartDashboard.putNumber("RightClimbEncoder Distance", rightClimbEncoder.getDistance());
+		SmartDashboard.putNumber("LeftClimbEncoder Rate", leftClimbEncoder.getRate());
+		SmartDashboard.putNumber("RightClimbEncoder Rate", rightClimbEncoder.getRate());
 	}
 
 	/**
