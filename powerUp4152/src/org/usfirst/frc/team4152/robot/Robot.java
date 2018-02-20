@@ -8,11 +8,16 @@ package org.usfirst.frc.team4152.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
+import edu.wpi.first.wpilibj.buttons.Button;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.can.CANStatus;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.hal.HAL;
@@ -20,18 +25,22 @@ import edu.wpi.first.wpilibj.hal.FRCNetComm.tInstances;
 import edu.wpi.first.wpilibj.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-
 import com.ctre.CANTalon;
+//import com.ctre.CANTalon.FeedbackDevice;
 import com.ctre.phoenix.CANifier;
 import com.ctre.phoenix.CANifierJNI;
 import com.ctre.phoenix.CANifierStatusFrame;
 import com.ctre.phoenix.motorcontrol.ControlFrame;
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.IMotorController;
 import com.ctre.phoenix.motorcontrol.IMotorControllerEnhanced;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -53,14 +62,8 @@ public class Robot extends IterativeRobot {
 	private Encoder leftClimbEncoder = new Encoder(5,6);
 	private Encoder rightClimbEncoder = new Encoder(7,8);
 	private Timer m_timer = new Timer();
-	//protected VictorSP leftMotors = new VictorSP(0);
-	//protected VictorSP rightMotors = new VictorSP(1);
-	//private DifferentialDrive robotDrive
-	//= new DifferentialDrive(leftMotors, rightMotors);
-	//creates talonSRX object with the id of 1.
-	private TalonSRX t = new TalonSRX(2);
-	private Spark lm = new Spark(0);
-	private Spark rm = new Spark(1);
+	private Spark lm = new Spark(2);
+	private Spark rm = new Spark(0);
 	//SpeedControllerGroup m_right = new SpeedControllerGroup(rm, rm);
 	//SpeedControllerGroup m_left = new SpeedControllerGroup(lm, lm);
 	private DifferentialDrive robotDrive
@@ -70,9 +73,35 @@ public class Robot extends IterativeRobot {
 	private TalonSRX blMotor = new TalonSRX(1);
 	private TalonSRX frMotor = new TalonSRX(2);
 	private TalonSRX brMotor = new TalonSRX(3);
+	private TalonSRX ClimbMotor1 = new TalonSRX(6);
+	private TalonSRX ClimbMotor2 = new TalonSRX(7);
+	//private Compressor Compressor = new Compressor(5);
+	/*private Solenoid Ratchet = new Solenoid (0);
+	private Solenoid leftArms= new Solenoid (1);
+	private Solenoid rightArms = new Solenoid (2);*/
+	final int buttonA = 1;
+    final int buttonB = 2;
+    final int buttonX = 3;
+    final int buttonY = 4;
+    final int LBumper = 5;
+	final int RBumper = 6;
+    final int buttonBack = 7;
+    final int buttonStart = 8;
+    final int lsPush = 9;
+    final int rsPush = 10;
+    final int rTrigger = 3;
+    final int lTrigger = 4;
+	
 	
 	String autoSelect = "0";
 	private double TacosFinancialSituation = 0.15;
+	int pulseWidthPos = 0;
+	double ElevatorSpeed = 0;
+	double ElevatorMaxSpeed = 0.5;
+	double IntakeSpeed = 0.5;
+	
+	
+			
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -80,7 +109,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	
 	public void robotInit() {
-		//SmartDashboard.putString("debug", "ROBOTInit");
+		//PlotThread _plotThread;
 		autoChooser= new SendableChooser();
 		//sets the motor speed to 100%
 		//t.set(ControlMode.PercentOutput, 0);
@@ -96,104 +125,42 @@ public class Robot extends IterativeRobot {
 		rightClimbEncoder.setDistancePerPulse(1.0/360);
 		leftClimbEncoder.reset();
 		rightClimbEncoder.reset();
+		ClimbMotor1.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
+		ClimbMotor2.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
 		
-		//Auto-select
-		
-		
-		//autoChooser.addDefault("Testboi", new autotest1());
-		//uncomment previous line for auto testing
-		//autoChooser.addObject("TestNoah", new autotest2());
-		
-		//autotest1 autoVersion1 = new autotest1(1);
+		//Compressor.setClosedLoopControl(true);
+
 		autoChooser.addDefault("Auto1", autoSelect = "1");
-		//autotest2 autoVersion2 = new autotest2(0);
 		autoChooser.addObject("Auto2", autoSelect = "2");
-		//autotest3 autoVersion3 = new autotest3(0);
 		autoChooser.addObject("Auto3",autoSelect = "3");
-		//autotest4 autoVersion4 = new autotest4(0);
 		autoChooser.addObject("Auto4",autoSelect = "4");
-		//autotest5 autoVersion5 = new autotest5(0);
 		autoChooser.addObject("Auto5",autoSelect = "5");
-		//autotest6 autoVersion6 = new autotest6(0);
 		autoChooser.addObject("Auto6",autoSelect = "6");
 		
 		SmartDashboard.putData("Autochoices and despair", autoChooser);
-		
-		//SmartDashboard.putString("Autonomous mode Chooser",autoChooser.getSelected().toString());
-		//autoVersion1.someVar == 1;
-		//autoVersion2.someVar == 1;
-		
-		
-		/*
+
 	
-
-		if (autoVersion1.someVar == 1)
-		{
-			autoSelect = 1;
-			SmartDashboard.putNumber("xValue", autoSelect);
-		}
-		
-		else if (autoVersion2.someVar ==1)
-		{
-		    autoSelect = 2;
-		    SmartDashboard.putNumber("xValue", autoSelect);
-		}
-		else if (autoVersion3.someVar ==1)
-		{
-		    autoSelect = 3;
-		}
-		else if (autoVersion4.someVar ==1)
-		{
-		    autoSelect = 4;
-		}
-		else if (autoVersion5.someVar ==1)
-		{
-		    autoSelect = 5;
-		}
-		else if (autoVersion6.someVar == 1)//somehow runs every if statement even though all but the first (should) be false. Even runs when changed to Somevar != 1 because shutup...
-		{
-		    autoSelect = 6;
-		    SmartDashboard.putNumber("xValue", autoSelect);
-		}
-		
-		//SmartDashboard.putString("debug", "finished teleopInit");
-		 
-		 
-		*/
-		//SmartDashboard.putNumber("xValue", autoSelect);
-
-		
-		
 	}
 	
 	
-
+	public String gameData;
 	/**
 	 * This function is run once each time the robot enters autonomous mode.
 	 */
 	@Override
 	public void autonomousInit() {
+		//ClimbMotor1.set;
+		leftEncoder.reset();
+		rightEncoder.reset();
+		leftClimbEncoder.reset();
+		rightClimbEncoder.reset();
+		ClimbMotor1.setSelectedSensorPosition(0, 0 ,0);
+		ClimbMotor2.setSelectedSensorPosition(0, 0 ,0);
+		gameData = DriverStation.getInstance().getGameSpecificMessage();
 		autoSelect = autoChooser.getSelected().toString();
 		SmartDashboard.putString("My Choice",autoChooser.getSelected().toString());
-		SmartDashboard.putString("debug", "autoInitLine156");
 		m_timer.reset();
 		m_timer.start();
-		SmartDashboard.putString("debug", "line157");
-		//leftEncoder.reset();
-		//rightEncoder.reset();
-		//leftClimbEncoder.reset();
-		//rightClimbEncoder.reset();
-		
-		SmartDashboard.putString("debug", "aiTimerStart");
-	
-		
-		//autonomousCommand = (Command) autoChooser.getSelected(); //dont uncomment
-		SmartDashboard.putString("debug", "line166");
-		//autonomousCommand.start(); //don't uncomment
-		SmartDashboard.putString("debug", "line168");
-		SmartDashboard.putString("Auto Selected",autoSelect);
-		SmartDashboard.putString("debug", "line171");
-		
 	}
 
 	/**
@@ -201,29 +168,68 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		SmartDashboard.putString("debug", "Periodic");
+		double EncoderPos = ClimbMotor2.getSelectedSensorPosition(0)/360;
 		Scheduler.getInstance().run();
-		//if (autoVersion1. == 1); this line has been commented out
+		SmartDashboard.putNumber("Elevator Encoder Velocity",ClimbMotor2.getSensorCollection().getPulseWidthVelocity());
 		//we shall overthrow the fuhrer with blood and iron, for today is the day of days that all days after this day shall remember this day as a day before their day that was the day of days... also Nolan is bad and so am I...
-		// Drive for 2 seconds
-		/*if (m_timer.get() < 2.0) {
-			m_robotDrive.arcadeDrive(0.5, 0.0); // drive forwards half speed
-		} else {
-			m_robotDrive.stopMotor(); // stop robot
-		}*/
 		SmartDashboard.putNumber("timer", m_timer.get());
-		if (m_timer.get() < 1.0)
-		{
-			if (autoSelect == "1")// dont f****** touch any code in regards to auto selection NOLAN!!!
+		//if (m_timer.get() < 2.0)
+		//{
+			if (autoSelect == "1")// dont f****** touch any code in regards to auto selection, NOLAN!!!
 			{
-				//code for auto 1
-				arcadeDrive(-1,0);
+				if(gameData.length()>0)
+				{
+					if(gameData.charAt(0) == 'L')
+					{
+						//while (leftEncoder.getDistance()<2.0&& rightEncoder.getDistance()<2.0)
+						while(m_timer.get()<2.0)
+						{
+							arcadeDrive(-0.5,0);
+						}
+						while(m_timer.get()<5.0)
+						{	
+							if(gameData.charAt(1)=='L')
+							{
+								arcadeDrive(-0.5,0.5);
+							}
+							else
+							{
+								arcadeDrive(-0.5,-0.5);
+							}
+						}
+						arcadeDrive(0,0);
+					} 
+					
+					else
+					{
+						//while (leftEncoder.getDistance()<2.0&& rightEncoder.getDistance()<2.0)
+						while(m_timer.get()<2.0)
+						{
+							arcadeDrive(0.5,0);
+						}
+						while(m_timer.get()<5.0)
+						{
+							if(gameData.charAt(1)=='L')
+							{
+								arcadeDrive(0.5,0.5);
+							}
+							else
+							{
+								arcadeDrive(0.5,-0.5);
+							}
+						}
+					}
+				}	
 			}
 			else if (autoSelect == "2")
 			{
 				//code for auto 2
-				arcadeDrive (-0.5,0);
-			}
+				while (leftEncoder.getDistance()<2.0&& rightEncoder.getDistance()<2.0) 
+				{
+					
+					arcadeDrive (-0.5,0);
+				}
+			}	
 			else if (autoSelect == "3")
 			{
 				//code for auto 3
@@ -236,28 +242,60 @@ public class Robot extends IterativeRobot {
 			else if (autoSelect == "5")
 			{
 				//code for auto 5
-			}
+				while(m_timer.get()<1.0)
+				{
+					lm.set(-1);
+					rm.set(1);
+				}
+				while((ClimbMotor2.getSelectedSensorPosition(0)/360)<98)
+				//while(m_timer.get()<4.7)
+				{	
+					if(EncoderPos>87)
+					{
+						ElevatorSpeed = (EncoderPos/100) +0.25;
+					}
+					else 
+					{
+						ElevatorSpeed = 1;
+					}
+				ClimbMotor1.set(ControlMode.PercentOutput, ElevatorSpeed);
+				ClimbMotor2.set(ControlMode.PercentOutput, -ElevatorSpeed);
+				}
+				if (EncoderPos==98)
+				{
+				lm.set(1);
+				rm.set(-1);
+				}
+				//while(m_timer.get()<9.4)
+				while((ClimbMotor2.getSelectedSensorPosition(0)/360)>0)
+				{
+					if (EncoderPos<10)
+					{
+						ElevatorSpeed = 0.25;
+					}
+					else
+					{
+						ElevatorSpeed = 1;
+					}
+				ClimbMotor1.set(ControlMode.PercentOutput, -ElevatorSpeed);
+				ClimbMotor2.set(ControlMode.PercentOutput, ElevatorSpeed);
+				}
+				ClimbMotor1.set(ControlMode.PercentOutput, 0);
+				ClimbMotor2.set(ControlMode.PercentOutput, 0);
+				}
 			else if (autoSelect == "6")
 			{
 				//code for auto 6
 			}
 			else 
 			{
-				arcadeDrive(1,1);
+				arcadeDrive(0,0);
 			}
-		}
-		else
-		{
-			arcadeDrive(0,0);
-		}
+		//}
 		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
 		SmartDashboard.putNumber("RightEncoder Distance", rightEncoder.getDistance());
 		SmartDashboard.putNumber("LeftEncoder Rate", leftEncoder.getRate());
 		SmartDashboard.putNumber("RightEncoder Rate", rightEncoder.getRate());
-		SmartDashboard.putNumber("LeftClimbEncoder Distance", leftClimbEncoder.getDistance());
-		SmartDashboard.putNumber("RightClimbEncoder Distance", rightClimbEncoder.getDistance());
-		SmartDashboard.putNumber("LeftClimbEncoder Rate", leftClimbEncoder.getRate());
-		SmartDashboard.putNumber("RightClimbEncoder Rate", rightClimbEncoder.getRate());
 	}
 
 	/**
@@ -265,11 +303,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopInit() {
-		SmartDashboard.putString("debug", "teleopInit");
 		leftEncoder.reset();
 		rightEncoder.reset();
 		leftClimbEncoder.reset();
 		rightClimbEncoder.reset();
+		ElevatorSpeed = 0;
+		ClimbMotor1.setSelectedSensorPosition(0, 0 ,0);
+		ClimbMotor2.setSelectedSensorPosition(0, 0 ,0);
 	}
 
 	/**
@@ -277,32 +317,107 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		/*if( (m_stick.getY() >=-0.2 && m_stick.getY() <= 0.2) && (m_stick.getX() >=-0.2 && m_stick.getX() <= 0.2))
-		{
-			robotDrive.arcadeDrive(hoystick*0.5, hoistick*0.5);
-		}	
-		else
-		{
-			robotDrive.arcadeDrive(m_stick.getY(), m_stick.getX());
-		}*/
-		//sets the motor with id 1 to 50%
-		//t.set(ControlMode.PercentOutput, 50);
-		//TacoDrive(flMotor,blMotor,frMotor,brMotor);
+		
 		arcadeDrive(-m_stick.getRawAxis(1), m_stick.getRawAxis(0));
 		joystickx = m_stick.getRawAxis(0);
 		joysticky = m_stick.getRawAxis(1);
-		SmartDashboard.putNumber("Y Axis", joysticky);
-		SmartDashboard.putNumber("X Axis", joystickx);
 		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
 		SmartDashboard.putNumber("RightEncoder Distance", rightEncoder.getDistance());
 		SmartDashboard.putNumber("LeftEncoder Rate", leftEncoder.getRate());
 		SmartDashboard.putNumber("RightEncoder Rate", rightEncoder.getRate());
-		SmartDashboard.putNumber("LeftClimbEncoder Distance", leftClimbEncoder.getDistance());
-		SmartDashboard.putNumber("RightClimbEncoder Distance", rightClimbEncoder.getDistance());
-		SmartDashboard.putNumber("LeftClimbEncoder Rate", leftClimbEncoder.getRate());
-		SmartDashboard.putNumber("RightClimbEncoder Rate", rightClimbEncoder.getRate());
-	}
-
+		int EncoderPos = ClimbMotor2.getSelectedSensorPosition(0)/360;
+		SmartDashboard.putNumber("Elevator Encoder Value", EncoderPos);
+		if(m_stick.getRawButton(RBumper))
+		{
+			if (EncoderPos<97)
+			{
+				if (EncoderPos<=87)
+				{
+					ElevatorSpeed = ElevatorMaxSpeed;
+				}
+				else
+				{ 
+					if(EncoderPos>87)
+					{
+						ElevatorSpeed = (EncoderPos/100) +0.25;
+					}
+				}
+			}
+			else
+			{
+				ElevatorSpeed = 0;
+			}
+			ClimbMotor1.set(ControlMode.PercentOutput, ElevatorSpeed);
+			ClimbMotor2.set(ControlMode.PercentOutput, -ElevatorSpeed);
+		  }
+		else if (m_stick.getRawButton(LBumper))
+		{
+			if(EncoderPos>0)
+			{
+				if (EncoderPos>=10)
+				{
+					ElevatorSpeed = ElevatorMaxSpeed;
+				}
+			else
+			{ 
+				if (EncoderPos<15)
+				{
+					ElevatorSpeed = 0.15;
+				}
+			}
+			}
+			else
+			{
+				ElevatorSpeed = 0;
+			}
+			ClimbMotor1.set(ControlMode.PercentOutput, -ElevatorSpeed);
+			ClimbMotor2.set(ControlMode.PercentOutput, ElevatorSpeed);
+		
+			
+		}
+		else
+		{
+			ClimbMotor1.set(ControlMode.PercentOutput, 0);
+			ClimbMotor2.set(ControlMode.PercentOutput, 0);
+		}
+		SmartDashboard.putNumber("Elevator Speed", ElevatorSpeed);
+		//Intake
+		if (m_stick.getRawAxis(rTrigger)>0.125)
+		{
+			lm.set(m_stick.getRawAxis(rTrigger));
+			rm.set(m_stick.getRawAxis(-rTrigger));
+		}
+		//Outtake(phrasing)
+		else if(m_stick.getRawAxis(lTrigger)>0.125)
+		{
+			lm.set(m_stick.getRawAxis(-lTrigger));
+			rm.set(m_stick.getRawAxis(lTrigger));
+		}
+		//No Trigger Input
+		else
+		{
+			lm.set(0);
+			rm.set(0);
+		}
+		/*if (m_timer.get()>145)
+		{
+			if (m_stick.getRawButton(buttonY))
+			{
+				leftArms.set(true);
+				rightArms.set(true);
+			}
+			else if (m_stick.getRawButton(buttonB))
+			{
+				Ratchet.set(false);
+			}
+			else
+			{
+				leftArms.set(false);
+				rightArms.set(false);
+				Ratchet.set(true);
+			}
+		}*/
+}
 	/**
 	 * This function is called periodically during test mode.
 	 */
@@ -369,6 +484,7 @@ public class Robot extends IterativeRobot {
 	  public void arcadeDrive(double xSpeed, double zRotation) {
 	    arcadeDrive(xSpeed, zRotation, true);
 	  }
+	  
 
 	  /**
 	   * Arcade drive method for differential drive platform.
@@ -382,6 +498,7 @@ public class Robot extends IterativeRobot {
 	  public void arcadeDrive(double xSpeed, double zRotation, boolean squaredInputs) {
 	    xSpeed = limit(xSpeed);
 	    xSpeed = applyDeadband(xSpeed, TacosFinancialSituation);
+	    int EncoderPos = ClimbMotor2.getSelectedSensorPosition(0)/360/100;
 
 	    zRotation = limit(zRotation);
 	    zRotation = applyDeadband(zRotation, TacosFinancialSituation);
@@ -417,7 +534,12 @@ public class Robot extends IterativeRobot {
 	        rightMotorOutput = xSpeed - zRotation;
 	      }
 	    }
-
+	    //This Math Doesn't account for - direction values,ignore for now
+	    if (EncoderPos>0);
+	    {
+	    	leftMotorOutput = limit(leftMotorOutput*(1.25-EncoderPos/100));
+	    	rightMotorOutput = limit(rightMotorOutput*(1.25-EncoderPos/100));
+	    }
 	    flMotor.set(ControlMode.PercentOutput,limit(leftMotorOutput));
 	    blMotor.set(ControlMode.PercentOutput,limit(leftMotorOutput));
 	    brMotor.set(ControlMode.PercentOutput,-limit(rightMotorOutput));
