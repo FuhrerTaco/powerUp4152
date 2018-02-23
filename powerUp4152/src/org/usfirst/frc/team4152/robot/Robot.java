@@ -161,6 +161,11 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putString("My Choice",autoChooser.getSelected().toString());
 		m_timer.reset();
 		m_timer.start();
+		
+		double getDist = leftEncoder.get() *18.84;
+		{
+			
+		}
 	}
 
 	/**
@@ -173,9 +178,23 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Elevator Encoder Velocity",ClimbMotor2.getSensorCollection().getPulseWidthVelocity());
 		//we shall overthrow the fuhrer with blood and iron, for today is the day of days that all days after this day shall remember this day as a day before their day that was the day of days... also Nolan is bad and so am I...
 		SmartDashboard.putNumber("timer", m_timer.get());
-		//if (m_timer.get() < 2.0)
-		//{
-			if (autoSelect == "1")// dont f****** touch any code in regards to auto selection, NOLAN!!!
+		/*
+			while(EncoderPos<25)
+			{
+				ClimbMotor1.set(ControlMode.PercentOutput, 0.5);
+				ClimbMotor2.set(ControlMode.PercentOutput, -0.5);
+				lm.set(-1);
+				rm.set(-1);
+			}
+			while(EncoderPos>0)
+			{
+				ClimbMotor1.set(ControlMode.PercentOutput, -0.5);
+				ClimbMotor2.set(ControlMode.PercentOutput, 0.5);
+				rm.set(0);
+				lm.set(0);
+			}
+			*/
+			if (autoSelect == "1")// dont touch any code in regards to auto selection, NOLAN!!!
 			{
 				if(gameData.length()>0)
 				{
@@ -204,7 +223,7 @@ public class Robot extends IterativeRobot {
 					{
 						//while (leftEncoder.getDistance()<2.0&& rightEncoder.getDistance()<2.0)
 						while(m_timer.get()<2.0)
-						{
+;						{
 							arcadeDrive(0.5,0);
 						}
 						while(m_timer.get()<5.0)
@@ -223,17 +242,168 @@ public class Robot extends IterativeRobot {
 			}
 			else if (autoSelect == "2")
 			{
+				
 				//code for auto 2
-				while (leftEncoder.getDistance()<2.0&& rightEncoder.getDistance()<2.0) 
+				if (gameData.length()>1)
 				{
-					
-					arcadeDrive (-0.5,0);
+					if (gameData.charAt(0) == 'L')
+					{	
+						while (leftEncoder.getDistance()<9&& rightEncoder.getDistance()<9) 
+						{
+							//Drive Forward
+							arcadeDrive (0.25,0);
+							/*while(EncoderPos<50)
+							{
+								//Raise Elevator
+								ClimbMotor1.set(ControlMode.PercentOutput, 1);
+								ClimbMotor2.set(ControlMode.PercentOutput, -1);
+							}*/
+							
+						}
+						while(leftEncoder.getDistance()<11)
+						{
+							//Turn Right 90deg
+							arcadeDrive(0.25,-0.25);
+						}
+						arcadeDrive(0,0);
+						//Kick Out Cube
+						lm.set(-1);
+						rm.set(-1);
+						Timer.delay(0.3);
+						/*while(EncoderPos>0)
+						{
+							//Lower Elevator
+							ClimbMotor1.set(ControlMode.PercentOutput, -1);
+							ClimbMotor2.set(ControlMode.PercentOutput, 1);
+						}*/
+						arcadeDrive(0,0);
+						ClimbMotor1.set(ControlMode.PercentOutput, 0);
+						ClimbMotor2.set(ControlMode.PercentOutput, 0);
+					}
+					else if (gameData.charAt(0) == 'R')
+					{
+						while(leftEncoder.getDistance()<10&&rightEncoder.getDistance()<10)
+						{
+							//Drive Forward
+							arcadeDrive(1,0);
+						}
+						while(leftEncoder.getDistance()<12&&rightEncoder.getDistance()<10)
+						{
+							//Turn Right 90deg
+							arcadeDrive(1,-1);
+						}
+						while(leftEncoder.getDistance()<20&&rightEncoder.getDistance()<18)
+						{
+							//Drive Forward
+							arcadeDrive(1,0);
+						}
+						while(leftEncoder.getDistance()<22&&rightEncoder.getDistance()<18)
+						{
+							//Turn Right 90 deg
+							arcadeDrive(1,-1);
+							while(EncoderPos<50)
+							{
+								//Raise Elevator
+								ClimbMotor1.set(ControlMode.PercentOutput, 1);
+								ClimbMotor2.set(ControlMode.PercentOutput, -1);
+							}
+						}
+						//Run Intake Out
+						lm.set(-1);
+						rm.set(-1);
+						Timer.delay(0.3);
+						while(EncoderPos>0)
+						{
+							//Lower Elevator
+							ClimbMotor1.set(ControlMode.PercentOutput, -1);
+							ClimbMotor2.set(ControlMode.PercentOutput, 1);
+						}
+						arcadeDrive(0,0);
+						ClimbMotor1.set(ControlMode.PercentOutput, 0);
+						ClimbMotor2.set(ControlMode.PercentOutput, 0);
+					}
+						
 				}
-			}	
+			}
 			else if (autoSelect == "3")
 			{
 				//code for auto 3
-				//arcadeDrive (-1,-1);
+				if (gameData.length()>0)
+				{
+					if (gameData.charAt(0)=='R')
+					{
+						while(leftEncoder.get() < 9 && rightEncoder.get() < 9)
+						{
+							//Drive Forward
+							arcadeDrive(-1,0);
+						}
+						while(rightEncoder.get()<11)
+						{
+							//Turn left 90deg
+							arcadeDrive(-1,1);
+							while(EncoderPos<50)
+							{
+								//Elevator Up
+								ClimbMotor1.set(ControlMode.PercentOutput, 1);
+								ClimbMotor2.set(ControlMode.PercentOutput, -1);
+							}
+							//Intake In
+							lm.set(-1);
+							rm.set(-1);
+							Timer.delay(0.3);
+							while(EncoderPos>0)
+							{
+								//Lower Elevator
+								ClimbMotor1.set(ControlMode.PercentOutput, -1);
+								ClimbMotor2.set(ControlMode.PercentOutput, 1);
+							}
+						}
+						arcadeDrive(0,0);
+						ClimbMotor1.set(ControlMode.PercentOutput, 0);
+						ClimbMotor2.set(ControlMode.PercentOutput, 0);
+					}
+					else if (gameData.charAt(0)=='L')
+					{
+						while(leftEncoder.get()<10&&rightEncoder.get()<10)
+						{
+							//Drive Forward
+							arcadeDrive(-1,0);
+						}
+						while(rightEncoder.get()<11)
+						{
+							//Turn left 90deg
+							arcadeDrive(-1,1);
+						}
+						while(leftEncoder.get()<19&&rightEncoder.get()<18)
+						{
+							//Drive Forward
+							arcadeDrive(-1,0);
+						}
+						while(rightEncoder.get()<20)
+						{
+							//Turn 90deg Left
+							arcadeDrive(-1,1);
+							while(EncoderPos<50)
+							{
+								//Elevator Up
+								ClimbMotor1.set(ControlMode.PercentOutput, 1);
+								ClimbMotor2.set(ControlMode.PercentOutput, -1);
+							}
+							lm.set(-1);
+							rm.set(-1);
+							Timer.delay(0.3);
+							while(EncoderPos>0)
+							{
+								//Elevator Down
+								ClimbMotor1.set(ControlMode.PercentOutput, -1);
+								ClimbMotor2.set(ControlMode.PercentOutput, 1);
+							}
+						}
+						arcadeDrive(0,0);
+						ClimbMotor1.set(ControlMode.PercentOutput, 0);
+						ClimbMotor2.set(ControlMode.PercentOutput, 0);
+					}
+				}
 			}
 			else if (autoSelect == "4")
 			{
@@ -287,10 +457,6 @@ public class Robot extends IterativeRobot {
 			{
 				//code for auto 6
 			}
-			else 
-			{
-				arcadeDrive(0,0);
-			}
 		//}
 		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
 		SmartDashboard.putNumber("RightEncoder Distance", rightEncoder.getDistance());
@@ -318,7 +484,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		
-		arcadeDrive(-m_stick.getRawAxis(1), m_stick.getRawAxis(0));
+		arcadeDrive(-m_stick.getRawAxis(1) * 0.75, m_stick.getRawAxis(0) * 0.75);
 		joystickx = m_stick.getRawAxis(0);
 		joysticky = m_stick.getRawAxis(1);
 		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
@@ -382,20 +548,20 @@ public class Robot extends IterativeRobot {
 		}
 		SmartDashboard.putNumber("Elevator Speed", ElevatorSpeed);
 		//Intake
-		if (m_stick.getRawAxis(rTrigger)>0.125)
+		if (m_stick.getRawButton(buttonX))
 		{
-			lm.set(m_stick.getRawAxis(rTrigger));
-			rm.set(m_stick.getRawAxis(-rTrigger));
+			lm.set(1);
+			rm.set(-1);
 		}
 		//Outtake(phrasing)
-		else if(m_stick.getRawAxis(lTrigger)>0.125)
+		else if(m_stick.getRawButton(buttonA))
 		{
-			lm.set(m_stick.getRawAxis(-lTrigger));
-			rm.set(m_stick.getRawAxis(lTrigger));
+			lm.set(-1);
+			rm.set(1);
 		}
-		//No Trigger Input
 		else
 		{
+		//No Trigger Input
 			lm.set(0);
 			rm.set(0);
 		}
