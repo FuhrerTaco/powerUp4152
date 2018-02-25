@@ -53,14 +53,14 @@ public class Robot extends IterativeRobot {
 	Command autonomousCommand;
 	SendableChooser autoChooser ;
 	private Joystick m_stick = new Joystick(0);
-	private double joystickx = m_stick.getRawAxis(0);
-	private double joysticky = m_stick.getRawAxis(1);
-	private double hoistick = m_stick.getRawAxis(4);
-	private double hoystick = m_stick.getRawAxis(5);
+	//private double joystickx = m_stick.getRawAxis(0);
+	//private double joysticky = m_stick.getRawAxis(1);
+	//private double hoistick = m_stick.getRawAxis(4);
+	//private double hoystick = m_stick.getRawAxis(5);
 	private Encoder leftEncoder = new Encoder(1,2);
-	private Encoder rightEncoder = new Encoder(3,4);
-	private Encoder leftClimbEncoder = new Encoder(5,6);
-	private Encoder rightClimbEncoder = new Encoder(7,8);
+	private Encoder rightEncoder = new Encoder(4,5);
+	//private Encoder leftClimbEncoder = new Encoder(5,6);
+	//private Encoder rightClimbEncoder = new Encoder(7,8);
 	private Timer m_timer = new Timer();
 	private Spark lm = new Spark(2);
 	private Spark rm = new Spark(0);
@@ -119,12 +119,12 @@ public class Robot extends IterativeRobot {
 		rightEncoder.setDistancePerPulse(1.0/360);
 		leftEncoder.reset();
 		rightEncoder.reset();
-		leftClimbEncoder.setSamplesToAverage(5);
+		/*leftClimbEncoder.setSamplesToAverage(5);
 		rightClimbEncoder.setSamplesToAverage(5);
 		leftClimbEncoder.setDistancePerPulse(1.0/360);
 		rightClimbEncoder.setDistancePerPulse(1.0/360);
 		leftClimbEncoder.reset();
-		rightClimbEncoder.reset();
+		rightClimbEncoder.reset();*/
 		ClimbMotor1.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
 		ClimbMotor2.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
 		
@@ -150,10 +150,12 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit() {
 		//ClimbMotor1.set;
+		Timer.delay(0.25);
 		leftEncoder.reset();
 		rightEncoder.reset();
-		leftClimbEncoder.reset();
-		rightClimbEncoder.reset();
+		//leftClimbEncoder.reset();
+		//rightClimbEncoder.reset();
+		Timer.delay(0.25);
 		ClimbMotor1.setSelectedSensorPosition(0, 0 ,0);
 		ClimbMotor2.setSelectedSensorPosition(0, 0 ,0);
 		gameData = DriverStation.getInstance().getGameSpecificMessage();
@@ -161,39 +163,67 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putString("My Choice",autoChooser.getSelected().toString());
 		m_timer.reset();
 		m_timer.start();
-		
-		double getDist = leftEncoder.get() *18.84;
-		{
-			
-		}
-	}
+		SmartDashboard.putNumber("Encoder Left Dist",leftEncoder.get()/360.0);
+		SmartDashboard.putNumber("Encoder Right Dist",rightEncoder.get()/360.0);
+		SmartDashboard.putString("What", "End init");
 
+		
+		
+		//double getDist = leftEncoder.get() *18.84;
+	}
+	
 	/**
 	 * This function is called periodically during autonomous.
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		SmartDashboard.putString("What", "start periodic");
+
+		SmartDashboard.putNumber("Timer", m_timer.get());
+		double getDistL = leftEncoder.get()/360.0;
+		double getDistR = rightEncoder.get()/360.0;
+		
 		double EncoderPos = ClimbMotor2.getSelectedSensorPosition(0)/360;
 		Scheduler.getInstance().run();
 		SmartDashboard.putNumber("Elevator Encoder Velocity",ClimbMotor2.getSensorCollection().getPulseWidthVelocity());
 		//we shall overthrow the fuhrer with blood and iron, for today is the day of days that all days after this day shall remember this day as a day before their day that was the day of days... also Nolan is bad and so am I...
-		SmartDashboard.putNumber("timer", m_timer.get());
-		/*
-			while(EncoderPos<25)
+		//SmartDashboard.putNumber("timer", m_timer.get());
+		SmartDashboard.putNumber("Encoder Left Dist",getDistL);
+		SmartDashboard.putNumber("Encoder Right Dist",getDistR);
+		
+		
+	 	while(m_timer.get()<1.0)
+		{
+			SmartDashboard.putString("What", "in loop");
+
+			SmartDashboard.putNumber("timer", m_timer.get());	
+			if(m_timer.get()<0.9)
 			{
-				ClimbMotor1.set(ControlMode.PercentOutput, 0.5);
-				ClimbMotor2.set(ControlMode.PercentOutput, -0.5);
+				//Raise /Run Intake
+				//ClimbMotor1.set(ControlMode.PercentOutput, 0.5);
+				//ClimbMotor2.set(ControlMode.PercentOutput, -0.5);
 				lm.set(-1);
-				rm.set(-1);
+				rm.set(1);
 			}
-			while(EncoderPos>0)
+			/*else if(EncoderPos>0)
 			{
+				//Lower/Intake Off
 				ClimbMotor1.set(ControlMode.PercentOutput, -0.5);
 				ClimbMotor2.set(ControlMode.PercentOutput, 0.5);
 				rm.set(0);
 				lm.set(0);
+			}*/
+			else
+			{
+				ClimbMotor1.set(ControlMode.PercentOutput, 0);
+				ClimbMotor2.set(ControlMode.PercentOutput, 0);
+				rm.set(0);
+				lm.set(0);
 			}
-			*/
+		}
+		SmartDashboard.putString("What", "out loop");
+
+			
 			if (autoSelect == "1")// dont touch any code in regards to auto selection, NOLAN!!!
 			{
 				if(gameData.length()>0)
@@ -242,65 +272,80 @@ public class Robot extends IterativeRobot {
 			}
 			else if (autoSelect == "2")
 			{
-				
+				SmartDashboard.putString("What", "Select 2");
+
 				//code for auto 2
 				if (gameData.length()>1)
 				{
-					if (gameData.charAt(0) == 'L')
-					{	
-						while (leftEncoder.getDistance()<9&& rightEncoder.getDistance()<9) 
+					//if (gameData.charAt(0) == 'L')
+					//{	
+					SmartDashboard.putString("What", "GameData Check");
+
+						while (-leftEncoder.get()/360<5.3&& rightEncoder.get()/360<5.3) 
 						{
+							SmartDashboard.putString("What", "Encoder Check");
+
 							//Drive Forward
-							arcadeDrive (0.25,0);
-							/*while(EncoderPos<50)
-							{
-								//Raise Elevator
-								ClimbMotor1.set(ControlMode.PercentOutput, 1);
-								ClimbMotor2.set(ControlMode.PercentOutput, -1);
-							}*/
+							arcadeDrive (0.75,0);
 							
 						}
-						while(leftEncoder.getDistance()<11)
+						arcadeDrive(0,0);
+						while(rightEncoder.get()/360>4.7)
 						{
+							SmartDashboard.putString("What", "Turn");
 							//Turn Right 90deg
-							arcadeDrive(0.25,-0.25);
+							arcadeDrive(0,0.60);
 						}
+						while(EncoderPos<50)
+						{
+							SmartDashboard.putString("What", "Elevator Up");
+							//Raise Elevator
+							ClimbMotor1.set(ControlMode.PercentOutput, 0.5);
+							ClimbMotor2.set(ControlMode.PercentOutput, -0.5);
+						}
+						SmartDashboard.putString("What", "Elevator Stop");
+						ClimbMotor1.set(ControlMode.PercentOutput, 0);
+						ClimbMotor1.set(ControlMode.PercentOutput, 0);
 						arcadeDrive(0,0);
 						//Kick Out Cube
 						lm.set(-1);
 						rm.set(-1);
 						Timer.delay(0.3);
-						/*while(EncoderPos>0)
+						while(EncoderPos>0)
 						{
 							//Lower Elevator
 							ClimbMotor1.set(ControlMode.PercentOutput, -1);
 							ClimbMotor2.set(ControlMode.PercentOutput, 1);
-						}*/
+						}
 						arcadeDrive(0,0);
+						/*if(EncoderPos>0)
+						{
+						//Elevator Down
 						ClimbMotor1.set(ControlMode.PercentOutput, 0);
 						ClimbMotor2.set(ControlMode.PercentOutput, 0);
-					}
-					else if (gameData.charAt(0) == 'R')
+						}*/
+					//}
+					/*else if (gameData.charAt(0) == 'R')
 					{
-						while(leftEncoder.getDistance()<10&&rightEncoder.getDistance()<10)
+						while(-leftEncoder.get()<7&&rightEncoder.get()<7)
 						{
 							//Drive Forward
-							arcadeDrive(1,0);
+							arcadeDrive(-0.25,0);
 						}
-						while(leftEncoder.getDistance()<12&&rightEncoder.getDistance()<10)
+						while(rightEncoder.get()>6.7)
 						{
 							//Turn Right 90deg
-							arcadeDrive(1,-1);
+							arcadeDrive(0,-0.25);
 						}
-						while(leftEncoder.getDistance()<20&&rightEncoder.getDistance()<18)
+						while(-leftEncoder.get()<20&&rightEncoder.get()<18)
 						{
 							//Drive Forward
-							arcadeDrive(1,0);
+							arcadeDrive(-0.25,0);
 						}
-						while(leftEncoder.getDistance()<22&&rightEncoder.getDistance()<18)
+						while(rightEncoder.get()<14.7)
 						{
 							//Turn Right 90 deg
-							arcadeDrive(1,-1);
+							arcadeDrive(0,-0.25);
 							while(EncoderPos<50)
 							{
 								//Raise Elevator
@@ -321,7 +366,7 @@ public class Robot extends IterativeRobot {
 						arcadeDrive(0,0);
 						ClimbMotor1.set(ControlMode.PercentOutput, 0);
 						ClimbMotor2.set(ControlMode.PercentOutput, 0);
-					}
+					}*/
 						
 				}
 			}
@@ -335,21 +380,21 @@ public class Robot extends IterativeRobot {
 						while(leftEncoder.get() < 9 && rightEncoder.get() < 9)
 						{
 							//Drive Forward
-							arcadeDrive(-1,0);
+							arcadeDrive(-0.25,0);
 						}
 						while(rightEncoder.get()<11)
 						{
 							//Turn left 90deg
-							arcadeDrive(-1,1);
+							arcadeDrive(0,0.25);
 							while(EncoderPos<50)
 							{
 								//Elevator Up
 								ClimbMotor1.set(ControlMode.PercentOutput, 1);
 								ClimbMotor2.set(ControlMode.PercentOutput, -1);
 							}
-							//Intake In
+							//Intake Out
 							lm.set(-1);
-							rm.set(-1);
+							rm.set(1);
 							Timer.delay(0.3);
 							while(EncoderPos>0)
 							{
@@ -367,30 +412,31 @@ public class Robot extends IterativeRobot {
 						while(leftEncoder.get()<10&&rightEncoder.get()<10)
 						{
 							//Drive Forward
-							arcadeDrive(-1,0);
+							arcadeDrive(-0.25,0);
 						}
 						while(rightEncoder.get()<11)
 						{
 							//Turn left 90deg
-							arcadeDrive(-1,1);
+							arcadeDrive(0,0.25);
 						}
 						while(leftEncoder.get()<19&&rightEncoder.get()<18)
 						{
 							//Drive Forward
-							arcadeDrive(-1,0);
+							arcadeDrive(-0.25,0);
 						}
 						while(rightEncoder.get()<20)
 						{
 							//Turn 90deg Left
-							arcadeDrive(-1,1);
+							arcadeDrive(0,0.25);
 							while(EncoderPos<50)
 							{
 								//Elevator Up
 								ClimbMotor1.set(ControlMode.PercentOutput, 1);
 								ClimbMotor2.set(ControlMode.PercentOutput, -1);
 							}
+							//Cube Out
 							lm.set(-1);
-							rm.set(-1);
+							rm.set(1);
 							Timer.delay(0.3);
 							while(EncoderPos>0)
 							{
@@ -458,8 +504,8 @@ public class Robot extends IterativeRobot {
 				//code for auto 6
 			}
 		//}
-		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
-		SmartDashboard.putNumber("RightEncoder Distance", rightEncoder.getDistance());
+		SmartDashboard.putNumber("LeftEncoder", leftEncoder.get());
+		SmartDashboard.putNumber("RightEncoder", rightEncoder.get());
 		SmartDashboard.putNumber("LeftEncoder Rate", leftEncoder.getRate());
 		SmartDashboard.putNumber("RightEncoder Rate", rightEncoder.getRate());
 	}
@@ -471,11 +517,12 @@ public class Robot extends IterativeRobot {
 	public void teleopInit() {
 		leftEncoder.reset();
 		rightEncoder.reset();
-		leftClimbEncoder.reset();
-		rightClimbEncoder.reset();
+		//leftClimbEncoder.reset();
+		//rightClimbEncoder.reset();
 		ElevatorSpeed = 0;
 		ClimbMotor1.setSelectedSensorPosition(0, 0 ,0);
 		ClimbMotor2.setSelectedSensorPosition(0, 0 ,0);
+		//Ratchet.equals(true);
 	}
 
 	/**
@@ -483,12 +530,11 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		
 		arcadeDrive(-m_stick.getRawAxis(1) * 0.75, m_stick.getRawAxis(0) * 0.75);
-		joystickx = m_stick.getRawAxis(0);
-		joysticky = m_stick.getRawAxis(1);
-		SmartDashboard.putNumber("LeftEncoder Distance", leftEncoder.getDistance());
-		SmartDashboard.putNumber("RightEncoder Distance", rightEncoder.getDistance());
+		//joystickx = m_stick.getRawAxis(0);
+		//joysticky = m_stick.getRawAxis(1);
+		SmartDashboard.putNumber("LeftEncoder", -leftEncoder.get()/360.0);
+		SmartDashboard.putNumber("RightEncoder", rightEncoder.get()/360.0);
 		SmartDashboard.putNumber("LeftEncoder Rate", leftEncoder.getRate());
 		SmartDashboard.putNumber("RightEncoder Rate", rightEncoder.getRate());
 		int EncoderPos = ClimbMotor2.getSelectedSensorPosition(0)/360;
@@ -561,9 +607,18 @@ public class Robot extends IterativeRobot {
 		}
 		else
 		{
-		//No Trigger Input
+		//No Input
 			lm.set(0);
 			rm.set(0);
+		}
+		if(m_timer.get()>145)
+		{
+			if(m_stick.getRawButton(buttonY))
+			{
+				//leftArms.set(true);
+				//rightArms.set(true);
+				//Ratchet.set(false);
+			}
 		}
 		/*if (m_timer.get()>145)
 		{
