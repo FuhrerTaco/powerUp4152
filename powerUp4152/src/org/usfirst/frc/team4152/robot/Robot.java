@@ -130,6 +130,9 @@ public class Robot extends IterativeRobot {
 		Arms.set(false);
 		m_timer.start();
 		hasntRun = true;
+		//check in IDE as it may be incorrect in context.
+		Hardware.Talon.setNeutralMode(com.ctre.phoenix.motorcontrol.NeutralMode.Brake);
+		
 	}
 	boolean hasntRun = true;
 	/**
@@ -175,7 +178,8 @@ public class Robot extends IterativeRobot {
 	public void teleopInit() {
 		//ClimbMotor2.setSelectedSensorPosition(0, 0,0);
 		Arms.set(false);
-		
+		//check in IDE as it may be incorrect in context.
+		Hardware.Talon.setNeutralMode(com.ctre.phoenix.motorcontrol.NeutralMode.Coast);
 	}
 
 	/**
